@@ -1,4 +1,5 @@
 import os
+import time
 import psycopg2
 from psycopg2.extras import RealDictCursor
 from flask import Flask, jsonify, request
@@ -20,6 +21,34 @@ def get_db_connection():
         password=DB_PASSWORD,
         dbname=DB_NAME
     )
+
+
+def init_db():
+    print("Initializing database...")
+    retries = 5
+    while retries > 0:
+        try:
+            conn = get_db_connection()
+            cur = conn.cursor()
+            cur.execute("""
+                CREATE TABLE IF NOT EXISTS users (
+                    id SERIAL PRIMARY KEY,
+                    username VARCHAR(100) NOT NULL,
+                    email VARCHAR(100) NOT NULL,
+                    password VARCHAR(100) NOT NULL
+                );
+            """)
+            conn.commit()
+            cur.close()
+            conn.close()
+            print("Database initialization complete.")
+            break
+        except psycopg2.OperationalError as e:
+            print(f"Database connection failed: {e}. Retrying in 3 seconds...")
+            time.sleep(3)
+            retries -= 1
+    else:
+        print("Could not connect to database to run migrations. Continuing...")
 
 
 @app.route('/users', methods=['GET'])
@@ -63,4 +92,5 @@ def create_user():
 
 
 if __name__ == '__main__':
+    init_db()
     app.run(host='0.0.0.0', port=5000)
