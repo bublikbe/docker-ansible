@@ -1,0 +1,17 @@
+# Environments and credentials
+app/.env
+.env
+
+# SSH keys
+ansible_id_rsa
+ansible_id_rsa.pub
+
+# Python caching
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# OS specific files
+.DS_Store
+Thumbs.db
