@@ -1,7 +1,7 @@
 import os
 import psycopg2
 from psycopg2.extras import RealDictCursor
-from flask import Flask, jsonify
+from flask import Flask, jsonify, request
 
 app = Flask(__name__)
 
@@ -24,13 +24,42 @@ def get_db_connection():
 
 @app.route('/users', methods=['GET'])
 def get_users():
-    conn = get_db_connection()
-    cur = conn.cursor(cursor_factory=RealDictCursor)
-    cur.execute("SELECT id, username, email, password FROM users;")
-    users = cur.fetchall()
-    cur.close()
-    conn.close()
-    return jsonify(users), 200
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor(cursor_factory=RealDictCursor)
+        cur.execute("SELECT id, username, email, password FROM users;")
+        users = cur.fetchall()
+        cur.close()
+        conn.close()
+        return jsonify(users), 200
+    except Exception as e:
+        return jsonify({"error": f"Failed to retrieve users: {str(e)}"}), 500
+
+
+@app.route('/users', methods=['POST'])
+def create_user():
+    data = request.get_json()
+    if not data:
+        return jsonify({"error": "Invalid request, JSON payload is required"}), 400
+    username = data.get('username')
+    email = data.get('email')
+    password = data.get('password')
+    if not username or not email or not password:
+        return jsonify({"error": "Fields 'username', 'email', and 'password' are required"}), 400
+    try:
+        conn = get_db_connection()
+        cur = conn.cursor()
+        cur.execute(
+            "INSERT INTO users (username, email, password) VALUES (%s, %s, %s) RETURNING id;",
+            (username, email, password)
+        )
+        user_id = cur.fetchone()[0]
+        conn.commit()
+        cur.close()
+        conn.close()
+        return jsonify({"message": "User created successfully", "id": user_id}), 201
+    except Exception as e:
+        return jsonify({"error": f"Failed to create user: {str(e)}"}), 500
 
 
 if __name__ == '__main__':
