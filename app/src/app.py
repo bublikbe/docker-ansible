@@ -3,16 +3,13 @@ import time
 import psycopg2
 from psycopg2.extras import RealDictCursor
 from flask import Flask, jsonify, request
-
-app = Flask(__name__)
+app = Flask(__name__, static_folder='static', static_url_path='')
 
 DB_HOST = os.environ.get('DB_HOST')
 DB_PORT = os.environ.get('DB_PORT', '5432')
 DB_USER = os.environ.get('DB_USER')
 DB_PASSWORD = os.environ.get('DB_PASSWORD')
 DB_NAME = os.environ.get('DB_NAME')
-
-
 def get_db_connection():
     return psycopg2.connect(
         host=DB_HOST,
@@ -21,8 +18,6 @@ def get_db_connection():
         password=DB_PASSWORD,
         dbname=DB_NAME
     )
-
-
 def init_db():
     print("Initializing database...")
     retries = 5
@@ -49,8 +44,9 @@ def init_db():
             retries -= 1
     else:
         print("Could not connect to database to run migrations. Continuing...")
-
-
+@app.route('/')
+def index():
+    return app.send_static_file('index.html')
 @app.route('/users', methods=['GET'])
 def get_users():
     try:
@@ -63,8 +59,6 @@ def get_users():
         return jsonify(users), 200
     except Exception as e:
         return jsonify({"error": f"Failed to retrieve users: {str(e)}"}), 500
-
-
 @app.route('/users', methods=['POST'])
 def create_user():
     data = request.get_json()
@@ -89,8 +83,8 @@ def create_user():
         return jsonify({"message": "User created successfully", "id": user_id}), 201
     except Exception as e:
         return jsonify({"error": f"Failed to create user: {str(e)}"}), 500
-
-
 if __name__ == '__main__':
+
     init_db()
+
     app.run(host='0.0.0.0', port=5000)
