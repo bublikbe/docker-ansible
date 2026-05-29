@@ -8,4 +8,8 @@ RUN apt-get update && apt-get install -y \
     python3 \
     python3-pip
 
-CMD ["sh", "-c", "tail -f /dev/null"]
+RUN ssh-keygen -t rsa -b 4096 -f /root/.ssh/id_rsa -N ""
+
+RUN echo "StrictHostKeyChecking no" >> /etc/ssh/ssh_config
+
+CMD ["sh", "-c", "cp /root/.ssh/id_rsa.pub /keys/master.pub; tail -f /dev/null"]
