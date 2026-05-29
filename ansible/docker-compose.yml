@@ -1,0 +1,51 @@
+version: "3.8"
+
+services:
+  master:
+    image: ansible-master:latest
+    container_name: master
+    privileged: true
+    networks:
+      - ansible-network
+    volumes:
+      - ./inventory.ini:/etc/ansible/hosts
+      - ./deploy.yml:/etc/ansible/deploy.yml
+      - ssh_keys:/keys
+    depends_on:
+      - slave1
+      - slave2
+
+  slave1:
+    image: ansible-slave:latest
+    container_name: slave1
+    privileged: true
+    expose:
+      - "22"
+    ports:
+      - "5001:5001"
+    volumes:
+      - slave1_docker:/var/lib/docker
+      - ssh_keys:/keys
+    networks:
+      - ansible-network
+
+  slave2:
+    image: ansible-slave:latest
+    container_name: slave2
+    privileged: true
+    expose:
+      - "22"
+    volumes:
+      - slave2_docker:/var/lib/docker
+      - ssh_keys:/keys
+    networks:
+      - ansible-network
+
+networks:
+  ansible-network:
+    driver: bridge
+
+volumes:
+  slave1_docker:
+  slave2_docker:
+  ssh_keys:
