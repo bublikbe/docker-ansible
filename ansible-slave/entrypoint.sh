@@ -1,4 +1,6 @@
 #!/bin/bash
+dockerd > /var/log/dockerd.log 2>&1 &
+
 for i in $(seq 1 30); do
     if [ -f /keys/master.pub ]; then
         cp /keys/master.pub /root/.ssh/authorized_keys
