@@ -28,3 +28,37 @@
       ansible.builtin.command: docker-compose up -d
       args:
         chdir: /opt/Docker-Ansible-project/database
+
+- name: Deploy Application Server (Slave 1)
+  hosts: appserver
+  vars:
+    db_host: "{{ hostvars['slave2'].ansible_default_ipv4.address }}"
+  tasks:
+    - name: Wait for Docker to be ready
+      ansible.builtin.command: docker info
+      register: result
+      until: result.rc == 0
+      retries: 30
+      delay: 2
+
+    - name: Clone the project
+      ansible.builtin.git:
+        repo: https://github.com/bublikbe/Docker-Ansible-project.git
+        dest: /opt/Docker-Ansible-project
+        version: main
+        force: true
+
+    - name: Create app/.env
+      ansible.builtin.copy:
+        dest: /opt/Docker-Ansible-project/app/.env
+        content: |
+          DB_HOST={{ db_host }}
+          DB_PORT=5432
+          DB_USER=admin
+          DB_PASSWORD=secret
+          DB_NAME=appdb
+
+    - name: Start the app
+      ansible.builtin.command: docker-compose up -d
+      args:
+        chdir: /opt/Docker-Ansible-project/app
