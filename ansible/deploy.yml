@@ -1,0 +1,30 @@
+---
+- name: Deploy Database Server (Slave 2)
+  hosts: dbserver
+  tasks:
+    - name: Wait for Docker to be ready
+      ansible.builtin.command: docker info
+      register: result
+      until: result.rc == 0
+      retries: 30
+      delay: 2
+
+    - name: Clone the project
+      ansible.builtin.git:
+        repo: https://github.com/bublikbe/Docker-Ansible-project.git
+        dest: /opt/Docker-Ansible-project
+        version: main
+        force: true
+
+    - name: Create database/.env
+      ansible.builtin.copy:
+        dest: /opt/Docker-Ansible-project/database/.env
+        content: |
+          POSTGRES_DB=appdb
+          POSTGRES_USER=admin
+          POSTGRES_PASSWORD=secret
+
+    - name: Start the database
+      ansible.builtin.command: docker-compose up -d
+      args:
+        chdir: /opt/Docker-Ansible-project/database
