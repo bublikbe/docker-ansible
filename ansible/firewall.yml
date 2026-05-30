@@ -1,0 +1,30 @@
+---
+- name: Lock down the Application Server (Slave 1)
+  hosts: appserver
+  tasks:
+    - name: Install UFW
+      ansible.builtin.apt:
+        name: ufw
+        state: present
+        update_cache: true
+
+    - name: Allow Docker's forwarded traffic
+      ansible.builtin.lineinfile:
+        path: /etc/default/ufw
+        regexp: '^DEFAULT_FORWARD_POLICY='
+        line: 'DEFAULT_FORWARD_POLICY="ACCEPT"'
+
+    - name: Default deny incoming
+      ansible.builtin.command: ufw default deny incoming
+
+    - name: Default allow outgoing
+      ansible.builtin.command: ufw default allow outgoing
+
+    - name: Allow SSH
+      ansible.builtin.command: ufw allow 22/tcp
+
+    - name: Allow the API ports
+      ansible.builtin.command: ufw allow 5001/tcp
+
+    - name: Enable UFW
+      ansible.builtin.command: ufw --force enable
