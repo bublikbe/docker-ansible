@@ -60,3 +60,24 @@
 
     - name: Enable UFW
       ansible.builtin.command: ufw --force enable
+
+- name: Lock down the Master
+  hosts: master
+  tasks:
+    - name: Install UFW
+      ansible.builtin.apt:
+        name: ufw
+        state: present
+        update_cache: true
+
+    - name: Default deny incoming
+      ansible.builtin.command: ufw default deny incoming
+
+    - name: Default allow outgoing
+      ansible.builtin.command: ufw default allow outgoing
+
+    - name: Allow SSH
+      ansible.builtin.command: ufw allow 22/tcp
+
+    - name: Enable UFW
+      ansible.builtin.command: ufw --force enable
