@@ -10,6 +10,7 @@ services:
     volumes:
       - ./inventory.ini:/etc/ansible/hosts
       - ./deploy.yml:/etc/ansible/deploy.yml
+      - ./firewall.yml:/etc/ansible/firewall.yml
       - ssh_keys:/keys
     depends_on:
       - slave1
