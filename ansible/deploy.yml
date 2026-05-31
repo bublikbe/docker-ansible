@@ -11,7 +11,7 @@
 
     - name: Clone the project
       ansible.builtin.git:
-        repo: https://github.com/bublikbe/Docker-Ansible-project.git
+        repo: https://github.com/bublikbe/docker-ansible.git
         dest: /opt/Docker-Ansible-project
         version: main
         force: true
@@ -43,7 +43,7 @@
 
     - name: Clone the project
       ansible.builtin.git:
-        repo: https://github.com/bublikbe/Docker-Ansible-project.git
+        repo: https://github.com/bublikbe/docker-ansible.git
         dest: /opt/Docker-Ansible-project
         version: main
         force: true
