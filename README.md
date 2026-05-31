@@ -13,16 +13,27 @@ separate "servers".
 
 ## Architecture
 
-```
-              Ansible Master (control node)
-                 |                  |
-            SSH (key)           SSH (key)
-                 |                  |
-          Slave 1 (App)       Slave 2 (DB)
-          Flask :5000         Postgres :5432
-          published :5001     pgAdmin :5050
-                 |                  |
-                 +----- app -> db --+
+A high-level view of the three "servers" and how they talk to each other:
+
+```mermaid
+graph TB
+    subgraph master["Ansible Master — control node"]
+        AM["Ansible playbooks<br/>deploy.yml · firewall.yml"]
+    end
+
+    subgraph slave1["Slave 1 — Application Server"]
+        APP["Flask REST API<br/>:5000 → published :5001"]
+    end
+
+    subgraph slave2["Slave 2 — Database Server"]
+        DB[("PostgreSQL 16<br/>:5432")]
+        PGA["pgAdmin 4<br/>:5050"]
+    end
+
+    AM -- "SSH (key auth)" --> APP
+    AM -- "SSH (key auth)" --> DB
+    APP -- "SQL" --> DB
+    PGA --- DB
 ```
 
 Each slave clones the repository and runs Docker Compose for its part (the app
